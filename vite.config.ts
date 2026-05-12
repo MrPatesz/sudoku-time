@@ -13,6 +13,7 @@ const config = defineConfig({
     },
   },
   plugins: [devtools(), tanstackStart({ spa: { enabled: true } }), viteReact()],
+  base: '/sudoku-time/',
 });
 
 export default config;

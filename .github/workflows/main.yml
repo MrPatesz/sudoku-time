@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout branch
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      # Install pnpm
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
+
+      # Setup Node
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      # Install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # Build Vite project
+      - name: Build Vite project
+        run: pnpm build
+
+      # Commit the published project files to GitHub Pages branch
+      - name: Commit files to GitHub Pages branch
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: dist
