@@ -1,7 +1,6 @@
 import {
   ActionIcon,
   AspectRatio,
-  Button,
   darken,
   Group,
   Menu,
