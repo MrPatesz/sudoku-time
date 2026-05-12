@@ -1,19 +1,29 @@
-import { createRouter as createTanStackRouter } from '@tanstack/react-router';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { StrictMode } from 'react';
+import ReactDOM from 'react-dom/client';
+import { Sudoku } from './components/Sudoku';
 import { routeTree } from './routeTree.gen';
 
-export function getRouter() {
-  const router = createTanStackRouter({
-    routeTree,
-    scrollRestoration: true,
-    defaultPreload: 'intent',
-    defaultPreloadStaleTime: 0,
-  });
-
-  return router;
-}
+const router = createRouter({
+  routeTree,
+  scrollRestoration: true,
+  defaultPreload: 'intent',
+  defaultPreloadStaleTime: 0,
+  defaultNotFoundComponent: Sudoku,
+});
 
 declare module '@tanstack/react-router' {
   interface Register {
-    router: ReturnType<typeof getRouter>;
+    router: typeof router;
   }
+}
+
+const rootElement = document.getElementById('root')!;
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>,
+  );
 }
