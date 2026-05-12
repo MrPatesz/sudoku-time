@@ -1,6 +1,7 @@
 {
   "short_name": "Sudoku Time",
   "name": "Sudoku Time",
+  "description": "Sudoku Time is a basic Sudoku game without ads, that can be installed on your device.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#242424",
+  "background_color": "#242424"
 }
