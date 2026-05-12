@@ -1,8 +1,7 @@
-import { TanStackDevtools } from '@tanstack/react-devtools';
-import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
+import '@mantine/core/styles.css';
 
-import appCss from '../styles.css?url';
+import { MantineProvider } from '@mantine/core';
+import { createRootRoute, HeadContent, Scripts } from '@tanstack/react-router';
 
 export const Route = createRootRoute({
   head: () => ({
@@ -15,13 +14,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
-      },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
+        title: 'Sudoku Time',
       },
     ],
   }),
@@ -35,8 +28,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
-        <TanStackDevtools
+        <MantineProvider
+        // TODO theme={{ primaryColor: 'violet' }}
+        >
+          {children}
+        </MantineProvider>
+        {/* <TanStackDevtools
           config={{
             position: 'bottom-right',
           }}
@@ -46,7 +43,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               render: <TanStackRouterDevtoolsPanel />,
             },
           ]}
-        />
+        /> */}
         <Scripts />
       </body>
     </html>
