@@ -71,6 +71,7 @@ function Cell({
 
   return (
     <UnstyledButton
+      onClick={onClick}
       onFocus={onClick}
       style={{
         border: '1px solid grey',
