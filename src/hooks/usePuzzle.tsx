@@ -1,12 +1,13 @@
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { useCallback, useEffect } from 'react';
+import { solveSudoku } from '#/utils/solveSudoku';
 
 export const usePuzzle = () => {
   const [puzzle, setPuzzle] = useLocalStorage<
     | {
         original: Array<number>;
         current: Array<number>;
-        // TODO solution: Array<number>;
+        solution: Array<number> | undefined;
       }
     | undefined
   >('puzzle');
@@ -18,7 +19,11 @@ export const usePuzzle = () => {
         const original = puzzles[Math.floor(Math.random() * puzzles.length)]
           .split('')
           .map(Number);
-        setPuzzle({ original, current: original });
+        setPuzzle({
+          original,
+          current: original,
+          solution: solveSudoku(original),
+        });
       })();
     }
   }, [puzzle, setPuzzle]);
@@ -45,6 +50,7 @@ export const usePuzzle = () => {
   return {
     current: puzzle?.current ?? [], // TODO Array<{current: number; original: number}> ???
     original: puzzle?.original ?? [],
+    solution: puzzle?.solution,
     update,
     restart,
     startNew,

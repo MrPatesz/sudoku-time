@@ -16,9 +16,11 @@ import {
   IconBrightnessHalf,
   IconMenu2,
   IconRainbow,
+  IconRefreshAlert,
   IconRotate,
   IconRotateClockwise2,
 } from '@tabler/icons-react';
+import { useLocalStorage } from '@uidotdev/usehooks';
 import { useEffect, useReducer, useState } from 'react';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { getIndices } from '#/utils/getIndices';
@@ -31,6 +33,7 @@ function Cell({
   onClick,
   selectedDigit,
   isOriginal,
+  wrong,
 }: {
   digit: number;
   index: number;
@@ -38,6 +41,7 @@ function Cell({
   onClick: () => void;
   selectedDigit: number;
   isOriginal: boolean;
+  wrong: boolean;
 }) {
   const {
     rowIndex: selectedRowIndex,
@@ -76,7 +80,12 @@ function Cell({
       bg={scheme === 'dark' ? bg && darken(bg, 0.5) : bg}
       p={0}
     >
-      <Text size={'32px'} ta={'center'} fw={isOriginal ? 'bold' : undefined}>
+      <Text
+        size={'32px'}
+        ta={'center'}
+        fw={isOriginal ? 'bold' : undefined}
+        style={{ color: wrong ? 'red' : undefined }}
+      >
         {digit || null}
       </Text>
     </UnstyledButton>
@@ -85,13 +94,15 @@ function Cell({
 
 export function Sudoku() {
   const { toggleColorScheme } = useMantineColorScheme();
+  const [strict, setStrict] = useLocalStorage('strict-mode', false);
 
   const [showColorPicker, toggleColorPicker] = useReducer(
     (prev) => !prev,
     false,
   );
   const [selected, setSelected] = useState<number>(0);
-  const { current, original, restart, startNew, update } = usePuzzle();
+  const { current, original, solution, restart, startNew, update } =
+    usePuzzle();
 
   const selectedDigit = current[selected];
 
@@ -181,6 +192,9 @@ export function Sudoku() {
                 onClick={() => setSelected(index)}
                 selectedDigit={selectedDigit}
                 isOriginal={original[index] === digit}
+                wrong={
+                  strict && !!digit && !!solution && digit !== solution[index]
+                }
               />
             ))}
           </SimpleGrid>
@@ -210,6 +224,14 @@ export function Sudoku() {
 
             <Menu.Dropdown>
               <Menu.Item
+                onClick={() => setStrict((prev) => !prev)}
+                leftSection={
+                  <IconRefreshAlert color={strict ? 'red' : undefined} />
+                }
+              >
+                Mode
+              </Menu.Item>
+              <Menu.Item
                 onClick={() => {
                   if (confirm('Are you sure you want to restart?')) {
                     restart();
@@ -233,13 +255,13 @@ export function Sudoku() {
                 onClick={toggleColorScheme}
                 leftSection={<IconBrightnessHalf />}
               >
-                Mode
+                Shade
               </Menu.Item>
               <Menu.Item
                 onClick={toggleColorPicker}
                 leftSection={<IconRainbow />}
               >
-                Colors
+                Color
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
