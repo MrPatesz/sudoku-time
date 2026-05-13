@@ -2,17 +2,14 @@ import '@mantine/core/styles.css';
 
 import { MantineProvider } from '@mantine/core';
 import { createRootRoute } from '@tanstack/react-router';
+import { usePrimaryColor } from '#/contexts/primaryColorContext';
 
 export const Route = createRootRoute({
   shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <MantineProvider
-    // TODO theme={{ primaryColor: 'violet' }}
-    >
-      {children}
-    </MantineProvider>
-  );
+  const { primaryColor } = usePrimaryColor();
+
+  return <MantineProvider theme={{ primaryColor }}>{children}</MantineProvider>;
 }

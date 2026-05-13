@@ -15,12 +15,14 @@ import {
 import {
   IconBrightnessHalf,
   IconMenu2,
+  IconRainbow,
   IconRotate,
   IconRotateClockwise2,
 } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { getIndices } from '#/utils/getIndices';
+import { PickPrimaryColorModal } from './PickPrimaryColorModal';
 
 function Cell({
   digit,
@@ -83,6 +85,11 @@ function Cell({
 
 export function Sudoku() {
   const { toggleColorScheme } = useMantineColorScheme();
+
+  const [showColorPicker, toggleColorPicker] = useReducer(
+    (prev) => !prev,
+    false,
+  );
   const [selected, setSelected] = useState<number>(0);
   const { current, original, restart, startNew, update } = usePuzzle();
 
@@ -152,80 +159,94 @@ export function Sudoku() {
   }, [selected, update]);
 
   return (
-    <Stack>
-      <AspectRatio maw={600}>
-        <SimpleGrid
-          cols={9}
-          spacing={0}
-          verticalSpacing={0}
-          bd={'4px solid grey'}
-        >
-          {current.map((digit, index) => (
-            <Cell
-              key={index}
-              digit={digit}
-              index={index}
-              selectedIndex={solved ? index : selected}
-              onClick={() => setSelected(index)}
-              selectedDigit={selectedDigit}
-              isOriginal={original[index] === digit}
-            />
-          ))}
-        </SimpleGrid>
-      </AspectRatio>
-      <Group gap={'xs'}>
-        {Array.from({ length: 10 }).map((_, digit) => (
-          <ActionIcon
-            key={digit}
-            size={'xl'}
-            variant={'default'}
-            onClick={() => update(selected, digit)}
-            disabled={
-              Boolean(original[selected]) || digitCounts[digit] === 9 || solved
-            }
+    <>
+      <PickPrimaryColorModal
+        opened={showColorPicker}
+        onClose={toggleColorPicker}
+      />
+      <Stack>
+        <AspectRatio maw={600}>
+          <SimpleGrid
+            cols={9}
+            spacing={0}
+            verticalSpacing={0}
+            bd={'4px solid grey'}
           >
-            {digit}
-          </ActionIcon>
-        ))}
-        <Menu>
-          <Menu.Target>
-            <ActionIcon size={'xl'} variant={'default'}>
-              <IconMenu2 />
+            {current.map((digit, index) => (
+              <Cell
+                key={index}
+                digit={digit}
+                index={index}
+                selectedIndex={solved ? index : selected}
+                onClick={() => setSelected(index)}
+                selectedDigit={selectedDigit}
+                isOriginal={original[index] === digit}
+              />
+            ))}
+          </SimpleGrid>
+        </AspectRatio>
+        <Group gap={'xs'}>
+          {Array.from({ length: 10 }).map((_, digit) => (
+            <ActionIcon
+              key={digit}
+              size={'xl'}
+              variant={'default'}
+              onClick={() => update(selected, digit)}
+              disabled={
+                Boolean(original[selected]) ||
+                digitCounts[digit] === 9 ||
+                solved
+              }
+            >
+              {digit}
             </ActionIcon>
-          </Menu.Target>
+          ))}
+          <Menu>
+            <Menu.Target>
+              <ActionIcon size={'xl'} variant={'default'}>
+                <IconMenu2 />
+              </ActionIcon>
+            </Menu.Target>
 
-          <Menu.Dropdown>
-            <Menu.Item
-              onClick={() => {
-                if (confirm('Are you sure you want to restart?')) {
-                  restart();
-                }
-              }}
-              leftSection={<IconRotate />}
-            >
-              Restart
-            </Menu.Item>
-            <Menu.Item
-              onClick={() => {
-                if (
-                  confirm('Are you sure you want to start the next puzzle?')
-                ) {
-                  startNew();
-                }
-              }}
-              leftSection={<IconRotateClockwise2 />}
-            >
-              New
-            </Menu.Item>
-            <Menu.Item
-              onClick={toggleColorScheme}
-              leftSection={<IconBrightnessHalf />}
-            >
-              Colors
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      </Group>
-    </Stack>
+            <Menu.Dropdown>
+              <Menu.Item
+                onClick={() => {
+                  if (confirm('Are you sure you want to restart?')) {
+                    restart();
+                  }
+                }}
+                leftSection={<IconRotate />}
+              >
+                Restart
+              </Menu.Item>
+              <Menu.Item
+                onClick={() => {
+                  if (
+                    confirm('Are you sure you want to start a new puzzle?')
+                  ) {
+                    startNew();
+                  }
+                }}
+                leftSection={<IconRotateClockwise2 />}
+              >
+                New
+              </Menu.Item>
+              <Menu.Item
+                onClick={toggleColorScheme}
+                leftSection={<IconBrightnessHalf />}
+              >
+                Mode
+              </Menu.Item>
+              <Menu.Item
+                onClick={toggleColorPicker}
+                leftSection={<IconRainbow />}
+              >
+                Colors
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
+      </Stack>
+    </>
   );
 }
