@@ -107,8 +107,43 @@ export function Sudoku() {
         const digit = Number(e.key);
         if (!Number.isNaN(digit)) {
           update(selected, digit);
+        } else if (e.key.startsWith('Arrow')) {
+          setSelected((prev) => {
+            const { rowIndex, colIndex } = getIndices(prev);
+
+            const getSelected = (rIndex: number, cIndex: number) => {
+              const resolveIndex = (index: number) => {
+                const minIndex = 0;
+                const maxIndex = 8;
+
+                return index < minIndex
+                  ? maxIndex
+                  : index > maxIndex
+                    ? minIndex
+                    : index;
+              };
+              return resolveIndex(rIndex) * 9 + resolveIndex(cIndex);
+            };
+
+            switch (e.key) {
+              case 'ArrowUp': {
+                return getSelected(rowIndex - 1, colIndex);
+              }
+              case 'ArrowDown': {
+                return getSelected(rowIndex + 1, colIndex);
+              }
+              case 'ArrowLeft': {
+                return getSelected(rowIndex, colIndex - 1);
+              }
+              case 'ArrowRight': {
+                return getSelected(rowIndex, colIndex + 1);
+              }
+              default: {
+                return prev;
+              }
+            }
+          });
         }
-        // TODO arrows
       },
       controller,
     );
