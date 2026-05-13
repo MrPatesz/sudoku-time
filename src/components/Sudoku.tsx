@@ -28,12 +28,14 @@ function Cell({
   selectedIndex,
   onClick,
   selectedDigit,
+  isOriginal,
 }: {
   digit: number;
   index: number;
   selectedIndex: number;
   onClick: () => void;
   selectedDigit: number;
+  isOriginal: boolean;
 }) {
   const {
     rowIndex: selectedRowIndex,
@@ -72,12 +74,7 @@ function Cell({
       bg={scheme === 'dark' ? bg && darken(bg, 0.5) : bg}
       p={0}
     >
-      <Text
-        size={
-          '32px' // TODO responsive
-        }
-        ta={'center'}
-      >
+      <Text size={'32px'} ta={'center'} fw={isOriginal ? 'bold' : undefined}>
         {digit || null}
       </Text>
     </UnstyledButton>
@@ -100,8 +97,6 @@ export function Sudoku() {
     },
     {} as Record<number, number>,
   );
-
-  // TODO useEffect: onKeydown 0-9
 
   useEffect(() => {
     const controller = new AbortController();
@@ -138,6 +133,7 @@ export function Sudoku() {
               selectedIndex={solved ? index : selected}
               onClick={() => setSelected(index)}
               selectedDigit={selectedDigit}
+              isOriginal={original[index] === digit}
             />
           ))}
         </SimpleGrid>
@@ -146,9 +142,7 @@ export function Sudoku() {
         {Array.from({ length: 10 }).map((_, digit) => (
           <ActionIcon
             key={digit}
-            size={
-              'xl' // TODO responsive
-            }
+            size={'xl'}
             variant={'default'}
             onClick={() => update(selected, digit)}
             disabled={
@@ -160,12 +154,7 @@ export function Sudoku() {
         ))}
         <Menu>
           <Menu.Target>
-            <ActionIcon
-              size={
-                'xl' // TODO responsive
-              }
-              variant={'default'}
-            >
+            <ActionIcon size={'xl'} variant={'default'}>
               <IconMenu2 />
             </ActionIcon>
           </Menu.Target>
