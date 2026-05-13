@@ -67,7 +67,7 @@ function Cell({
 
   return (
     <UnstyledButton
-      onClick={onClick}
+      onFocus={onClick}
       style={{
         border: '1px solid grey',
         borderLeft: colIndex % 3 || !colIndex ? undefined : '4px solid grey',
@@ -221,9 +221,7 @@ export function Sudoku() {
               </Menu.Item>
               <Menu.Item
                 onClick={() => {
-                  if (
-                    confirm('Are you sure you want to start a new puzzle?')
-                  ) {
+                  if (confirm('Are you sure you want to start a new puzzle?')) {
                     startNew();
                   }
                 }}
