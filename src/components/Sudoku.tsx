@@ -100,8 +100,27 @@ function Cell({
           onChange(newNumber);
         }
       }}
+      step={1}
+      min={0}
+      max={9}
       onKeyDownCapture={(e) => {
-        if (e.key.startsWith('Arrow') || e.key === '.' || e.key === ',') {
+        if (
+          ![
+            '0',
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '6',
+            '7',
+            '8',
+            '9',
+            'Backspace',
+            'Delete',
+            'Tab',
+          ].includes(e.key)
+        ) {
           e.preventDefault();
         }
       }}
