@@ -94,7 +94,11 @@ function Cell({
       value={digit || ''}
       onChange={(e) => {
         const newNumber = Number(
-          e.currentTarget.value.toString().replace(digit.toString(), ''),
+          e.currentTarget.value
+            .toString()
+            .replace('.', '')
+            .replace(',', '')
+            .replace(digit.toString(), ''),
         );
         if (!Number.isNaN(newNumber)) {
           onChange(newNumber);
