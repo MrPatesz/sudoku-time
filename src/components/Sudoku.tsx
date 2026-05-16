@@ -99,7 +99,11 @@ function Cell({
         setPrevInput(e.currentTarget.value);
         const newNumber = Number(e.currentTarget.value.replace(prevInput, ''));
         if (!Number.isNaN(newNumber)) {
-          onChange(newNumber);
+          onChange(
+            newNumber > 9 || Math.floor(newNumber) !== newNumber
+              ? 0
+              : newNumber,
+          );
         }
       }}
       step={1}
