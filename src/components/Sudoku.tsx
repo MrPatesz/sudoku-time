@@ -85,6 +85,8 @@ function Cell({
   const sm = useMediaQuery(`(min-width: ${em(400)})`);
   const md = useMediaQuery(`(min-width: ${em(500)})`);
 
+  const [prevInput, setPrevInput] = useState(digit.toString());
+
   return (
     <Input
       ref={ref}
@@ -94,13 +96,8 @@ function Cell({
       readOnly={isOriginal}
       value={digit || ''}
       onChange={(e) => {
-        const newNumber = Number(
-          e.currentTarget.value
-            .toString()
-            .replace(digit.toString(), '')
-            .replace('.', '')
-            .replace(',', ''),
-        );
+        setPrevInput(e.currentTarget.value);
+        const newNumber = Number(e.currentTarget.value.replace(prevInput, ''));
         if (!Number.isNaN(newNumber)) {
           onChange(newNumber);
         }
