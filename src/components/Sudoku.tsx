@@ -90,6 +90,7 @@ function Cell({
       ref={ref}
       variant={'unstyled'}
       type={'number'}
+      inputMode={'numeric'}
       readOnly={isOriginal}
       value={digit || ''}
       onChange={(e) => {
