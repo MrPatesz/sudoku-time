@@ -183,7 +183,7 @@ export function Sudoku() {
         opened={showColorPicker}
         onClose={toggleColorPicker}
       />
-      <Stack align={'center'} h={'100vh'} p={'xs'}>
+      <Stack align={'center'} h={'100dvh'} p={'xs'}>
         <Box w={'100%'} flex={1} pos={'relative'}>
           <Rectangle>
             <SimpleGrid
