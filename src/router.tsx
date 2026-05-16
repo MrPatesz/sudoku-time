@@ -1,7 +1,6 @@
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Sudoku } from './components/Sudoku';
 import { PrimaryColorProvider } from './contexts/primaryColorContext';
 import { routeTree } from './routeTree.gen';
 
@@ -10,7 +9,7 @@ const router = createRouter({
   scrollRestoration: true,
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 0,
-  defaultNotFoundComponent: Sudoku,
+  basepath: '/sudoku-time/',
 });
 
 declare module '@tanstack/react-router' {
