@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "short_name": "Sudoku Time",
   "name": "Sudoku Time",
   "description": "Sudoku Time is a basic Sudoku game without ads, that can be installed on your device.",
