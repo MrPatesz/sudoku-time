@@ -2,6 +2,7 @@ import {
   ActionIcon,
   AspectRatio,
   darken,
+  em,
   Flex,
   Input,
   Menu,
@@ -10,7 +11,7 @@ import {
   useMantineColorScheme,
   useMantineTheme,
 } from '@mantine/core';
-import { useViewportSize } from '@mantine/hooks';
+import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 import {
   IconBrightnessHalf,
   IconMenu2,
@@ -80,6 +81,10 @@ function Cell({
     }
   }, [index, selectedIndex]);
 
+  const xs = useMediaQuery(`(min-width: ${em(300)})`);
+  const sm = useMediaQuery(`(min-width: ${em(400)})`);
+  const md = useMediaQuery(`(min-width: ${em(500)})`);
+
   return (
     <Input
       ref={ref}
@@ -95,7 +100,7 @@ function Cell({
         }
       }}
       onKeyDownCapture={(e) => {
-        if (e.key !== 'Tab') {
+        if (e.key.startsWith('Arrow')) {
           e.preventDefault();
         }
       }}
@@ -109,11 +114,12 @@ function Cell({
       styles={{
         input: {
           height: '100%',
-          fontSize: '32px',
+          fontSize: `${md ? 32 : sm ? 24 : xs ? 16 : 12}px`,
           textAlign: 'center',
           fontWeight: isOriginal ? 'bold' : undefined,
           color: strict && wrong ? 'red' : undefined,
           userSelect: 'none',
+          minHeight: 0,
         },
       }}
     />
@@ -193,18 +199,6 @@ export function Sudoku() {
     [current, solution],
   );
 
-  const digitCounts = useMemo(
-    () =>
-      current.reduce(
-        (acc, digit) => {
-          acc[digit] = (acc[digit] ?? 0) + 1;
-          return acc;
-        },
-        {} as Record<number, number | undefined>,
-      ),
-    [current],
-  );
-
   useEffect(() => {
     const controller = new AbortController();
 
@@ -257,8 +251,6 @@ export function Sudoku() {
 
   const tall = height > width;
 
-  const numPadSize = { width: 152, height: 206 } as const;
-
   return (
     <>
       <PickPrimaryColorModal
@@ -269,14 +261,9 @@ export function Sudoku() {
         style={{ flexDirection: tall ? 'column' : 'row' }}
         gap={'xs'}
         align={'center'}
-        h={'100dvh'}
         p={'xs'}
       >
-        <AspectRatio
-          {...(tall
-            ? { w: '100%', mah: height - (numPadSize.height + 3 * 10) }
-            : { h: '100%', maw: width - (numPadSize.width + 3 * 10) })}
-        >
+        <AspectRatio {...(tall ? { w: '100%' } : { h: '100%' })}>
           <SimpleGrid
             cols={9}
             spacing={0}
@@ -300,42 +287,7 @@ export function Sudoku() {
             ))}
           </SimpleGrid>
         </AspectRatio>
-        <SimpleGrid
-          cols={3}
-          spacing={'xs'}
-          w={numPadSize.width}
-          h={numPadSize.height}
-        >
-          {Array.from({ length: 9 }).map((_, index) => {
-            const digit = index + 1;
-            return (
-              <ActionIcon
-                key={digit}
-                size={'xl'}
-                variant={'default'}
-                onClick={() => update(selected, digit)}
-                disabled={
-                  Boolean(original[selected]) ||
-                  digitCounts[digit] === 9 ||
-                  solved
-                }
-              >
-                {digit}
-              </ActionIcon>
-            );
-          })}
-          <MenuButton toggleColorPicker={toggleColorPicker} />
-          <ActionIcon
-            size={'xl'}
-            variant={'default'}
-            onClick={() => update(selected, 0)}
-            disabled={
-              Boolean(original[selected]) || digitCounts[0] === 9 || solved
-            }
-          >
-            0
-          </ActionIcon>
-        </SimpleGrid>
+        <MenuButton toggleColorPicker={toggleColorPicker} />
       </Flex>
     </>
   );
