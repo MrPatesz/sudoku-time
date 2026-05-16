@@ -1,8 +1,7 @@
 import {
   ActionIcon,
-  AspectRatio,
+  Box,
   darken,
-  Group,
   Menu,
   SimpleGrid,
   Stack,
@@ -21,10 +20,11 @@ import {
   IconRotateClockwise2,
 } from '@tabler/icons-react';
 import { useLocalStorage } from '@uidotdev/usehooks';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { getIndices } from '#/utils/getIndices';
 import { PickPrimaryColorModal } from './PickPrimaryColorModal';
+import { Rectangle } from './Rectangle';
 
 function Cell({
   digit,
@@ -107,14 +107,21 @@ export function Sudoku() {
 
   const selectedDigit = current[selected];
 
-  const solved = current.every((digit) => digit);
+  const solved = useMemo(
+    () => current.every((digit, index) => digit === solution?.[index]),
+    [current, solution],
+  );
 
-  const digitCounts = current.reduce(
-    (acc, digit) => {
-      acc[digit] = (acc[digit] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<number, number>,
+  const digitCounts = useMemo(
+    () =>
+      current.reduce(
+        (acc, digit) => {
+          acc[digit] = (acc[digit] ?? 0) + 1;
+          return acc;
+        },
+        {} as Record<number, number | undefined>,
+      ),
+    [current],
   );
 
   useEffect(() => {
@@ -176,46 +183,53 @@ export function Sudoku() {
         opened={showColorPicker}
         onClose={toggleColorPicker}
       />
-      <Stack>
-        <AspectRatio maw={600}>
-          <SimpleGrid
-            cols={9}
-            spacing={0}
-            verticalSpacing={0}
-            bd={'4px solid grey'}
-          >
-            {current.map((digit, index) => (
-              <Cell
-                key={index}
-                digit={digit}
-                index={index}
-                selectedIndex={solved ? index : selected}
-                onClick={() => setSelected(index)}
-                selectedDigit={selectedDigit}
-                isOriginal={original[index] === digit}
-                wrong={
-                  strict && !!digit && !!solution && digit !== solution[index]
-                }
-              />
-            ))}
-          </SimpleGrid>
-        </AspectRatio>
-        <Group gap={'xs'}>
-          {Array.from({ length: 10 }).map((_, digit) => (
-            <ActionIcon
-              key={digit}
-              size={'xl'}
-              variant={'default'}
-              onClick={() => update(selected, digit)}
-              disabled={
-                Boolean(original[selected]) ||
-                digitCounts[digit] === 9 ||
-                solved
-              }
+      <Stack align={'center'} h={'100vh'} p={'xs'}>
+        <Box w={'100%'} flex={1} pos={'relative'}>
+          <Rectangle>
+            <SimpleGrid
+              cols={9}
+              spacing={0}
+              verticalSpacing={0}
+              bd={'4px solid grey'}
+              w={'100%'}
+              h={'100%'}
             >
-              {digit}
-            </ActionIcon>
-          ))}
+              {current.map((digit, index) => (
+                <Cell
+                  key={index}
+                  digit={digit}
+                  index={index}
+                  selectedIndex={solved ? index : selected}
+                  onClick={() => setSelected(index)}
+                  selectedDigit={selectedDigit}
+                  isOriginal={original[index] === digit}
+                  wrong={
+                    strict && !!digit && !!solution && digit !== solution[index]
+                  }
+                />
+              ))}
+            </SimpleGrid>
+          </Rectangle>
+        </Box>
+        <SimpleGrid cols={3} spacing={'xs'}>
+          {Array.from({ length: 9 }).map((_, index) => {
+            const digit = index + 1;
+            return (
+              <ActionIcon
+                key={digit}
+                size={'xl'}
+                variant={'default'}
+                onClick={() => update(selected, digit)}
+                disabled={
+                  Boolean(original[selected]) ||
+                  digitCounts[digit] === 9 ||
+                  solved
+                }
+              >
+                {digit}
+              </ActionIcon>
+            );
+          })}
           <Menu>
             <Menu.Target>
               <ActionIcon size={'xl'} variant={'default'}>
@@ -266,7 +280,17 @@ export function Sudoku() {
               </Menu.Item>
             </Menu.Dropdown>
           </Menu>
-        </Group>
+          <ActionIcon
+            size={'xl'}
+            variant={'default'}
+            onClick={() => update(selected, 0)}
+            disabled={
+              Boolean(original[selected]) || digitCounts[0] === 9 || solved
+            }
+          >
+            0
+          </ActionIcon>
+        </SimpleGrid>
       </Stack>
     </>
   );
