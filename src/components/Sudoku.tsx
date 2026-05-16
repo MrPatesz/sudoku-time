@@ -90,15 +90,16 @@ function Cell({
       ref={ref}
       variant={'unstyled'}
       type={'number'}
+      inputMode={'numeric'}
       readOnly={isOriginal}
       value={digit || ''}
       onChange={(e) => {
         const newNumber = Number(
           e.currentTarget.value
             .toString()
+            .replace(digit.toString(), '')
             .replace('.', '')
-            .replace(',', '')
-            .replace(digit.toString(), ''),
+            .replace(',', ''),
         );
         if (!Number.isNaN(newNumber)) {
           onChange(newNumber);
@@ -107,7 +108,7 @@ function Cell({
       step={1}
       min={0}
       max={9}
-      onKeyDownCapture={(e) => {
+      onKeyDown={(e) => {
         if (
           ![
             '0',
