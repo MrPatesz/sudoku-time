@@ -1,16 +1,17 @@
 import {
   ActionIcon,
-  Box,
+  AspectRatio,
   darken,
+  Flex,
   Menu,
   SimpleGrid,
-  Stack,
   Text,
   UnstyledButton,
   useComputedColorScheme,
   useMantineColorScheme,
   useMantineTheme,
 } from '@mantine/core';
+import { useViewportSize } from '@mantine/hooks';
 import {
   IconBrightnessHalf,
   IconMenu2,
@@ -19,12 +20,11 @@ import {
   IconRotate,
   IconRotateClockwise2,
 } from '@tabler/icons-react';
-import { useLocalStorage } from '@uidotdev/usehooks';
 import { useEffect, useMemo, useReducer, useState } from 'react';
 import { usePuzzle } from '#/hooks/usePuzzle';
+import { useStrict } from '#/hooks/useStrict';
 import { getIndices } from '#/utils/getIndices';
 import { PickPrimaryColorModal } from './PickPrimaryColorModal';
-import { Rectangle } from './Rectangle';
 
 function Cell({
   digit,
@@ -43,6 +43,8 @@ function Cell({
   isOriginal: boolean;
   wrong: boolean;
 }) {
+  const [strict] = useStrict();
+
   const {
     rowIndex: selectedRowIndex,
     colIndex: selectedColIndex,
@@ -85,7 +87,7 @@ function Cell({
         size={'32px'}
         ta={'center'}
         fw={isOriginal ? 'bold' : undefined}
-        style={{ color: wrong ? 'red' : undefined }}
+        style={{ color: strict && wrong ? 'red' : undefined }}
       >
         {digit || null}
       </Text>
@@ -93,19 +95,73 @@ function Cell({
   );
 }
 
-export function Sudoku() {
+const MenuButton = ({
+  toggleColorPicker,
+}: {
+  toggleColorPicker: () => void;
+}) => {
   const { toggleColorScheme } = useMantineColorScheme();
-  const [strict, setStrict] = useLocalStorage('strict-mode', false);
+  const [strict, setStrict] = useStrict();
+  const { restart, startNew } = usePuzzle();
+
+  return (
+    <Menu>
+      <Menu.Target>
+        <ActionIcon size={'xl'} variant={'default'}>
+          <IconMenu2 />
+        </ActionIcon>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        <Menu.Item
+          onClick={() => setStrict((prev) => !prev)}
+          leftSection={<IconRefreshAlert color={strict ? 'red' : undefined} />}
+        >
+          Mode
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => {
+            if (confirm('Are you sure you want to restart?')) {
+              restart();
+            }
+          }}
+          leftSection={<IconRotate />}
+        >
+          Restart
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => {
+            if (confirm('Are you sure you want to start a new puzzle?')) {
+              startNew();
+            }
+          }}
+          leftSection={<IconRotateClockwise2 />}
+        >
+          New
+        </Menu.Item>
+        <Menu.Item
+          onClick={toggleColorScheme}
+          leftSection={<IconBrightnessHalf />}
+        >
+          Shade
+        </Menu.Item>
+        <Menu.Item onClick={toggleColorPicker} leftSection={<IconRainbow />}>
+          Color
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
+  );
+};
+
+export function Sudoku() {
+  const { height, width } = useViewportSize();
 
   const [showColorPicker, toggleColorPicker] = useReducer(
     (prev) => !prev,
     false,
   );
   const [selected, setSelected] = useState<number>(0);
-  const { current, original, solution, restart, startNew, update } =
-    usePuzzle();
-
-  const selectedDigit = current[selected];
+  const { current, original, solution, update } = usePuzzle();
 
   const solved = useMemo(
     () => current.every((digit, index) => digit === solution?.[index]),
@@ -177,41 +233,56 @@ export function Sudoku() {
     return () => controller.abort();
   }, [selected, update]);
 
+  const tall = height > width;
+
+  const numPadSize = { width: 152, height: 206 } as const;
+
   return (
     <>
       <PickPrimaryColorModal
         opened={showColorPicker}
         onClose={toggleColorPicker}
       />
-      <Stack align={'center'} h={'100dvh'} p={'xs'}>
-        <Box w={'100%'} flex={1} pos={'relative'}>
-          <Rectangle>
-            <SimpleGrid
-              cols={9}
-              spacing={0}
-              verticalSpacing={0}
-              bd={'4px solid grey'}
-              w={'100%'}
-              h={'100%'}
-            >
-              {current.map((digit, index) => (
-                <Cell
-                  key={index}
-                  digit={digit}
-                  index={index}
-                  selectedIndex={solved ? index : selected}
-                  onClick={() => setSelected(index)}
-                  selectedDigit={selectedDigit}
-                  isOriginal={original[index] === digit}
-                  wrong={
-                    strict && !!digit && !!solution && digit !== solution[index]
-                  }
-                />
-              ))}
-            </SimpleGrid>
-          </Rectangle>
-        </Box>
-        <SimpleGrid cols={3} spacing={'xs'}>
+      <Flex
+        style={{ flexDirection: tall ? 'column' : 'row' }}
+        gap={'xs'}
+        align={'center'}
+        h={'100dvh'}
+        p={'xs'}
+      >
+        <AspectRatio
+          {...(tall
+            ? { w: '100%', mah: height - (numPadSize.height + 3 * 10) }
+            : { h: '100%', maw: width - (numPadSize.width + 3 * 10) })}
+        >
+          <SimpleGrid
+            cols={9}
+            spacing={0}
+            verticalSpacing={0}
+            bd={'4px solid grey'}
+            w={'100%'}
+            h={'100%'}
+          >
+            {current.map((digit, index) => (
+              <Cell
+                key={index}
+                digit={digit}
+                index={index}
+                selectedIndex={solved ? index : selected}
+                onClick={() => setSelected(index)}
+                selectedDigit={current[selected]}
+                isOriginal={original[index] === digit}
+                wrong={!!digit && !!solution && digit !== solution[index]}
+              />
+            ))}
+          </SimpleGrid>
+        </AspectRatio>
+        <SimpleGrid
+          cols={3}
+          spacing={'xs'}
+          w={numPadSize.width}
+          h={numPadSize.height}
+        >
           {Array.from({ length: 9 }).map((_, index) => {
             const digit = index + 1;
             return (
@@ -230,56 +301,7 @@ export function Sudoku() {
               </ActionIcon>
             );
           })}
-          <Menu>
-            <Menu.Target>
-              <ActionIcon size={'xl'} variant={'default'}>
-                <IconMenu2 />
-              </ActionIcon>
-            </Menu.Target>
-
-            <Menu.Dropdown>
-              <Menu.Item
-                onClick={() => setStrict((prev) => !prev)}
-                leftSection={
-                  <IconRefreshAlert color={strict ? 'red' : undefined} />
-                }
-              >
-                Mode
-              </Menu.Item>
-              <Menu.Item
-                onClick={() => {
-                  if (confirm('Are you sure you want to restart?')) {
-                    restart();
-                  }
-                }}
-                leftSection={<IconRotate />}
-              >
-                Restart
-              </Menu.Item>
-              <Menu.Item
-                onClick={() => {
-                  if (confirm('Are you sure you want to start a new puzzle?')) {
-                    startNew();
-                  }
-                }}
-                leftSection={<IconRotateClockwise2 />}
-              >
-                New
-              </Menu.Item>
-              <Menu.Item
-                onClick={toggleColorScheme}
-                leftSection={<IconBrightnessHalf />}
-              >
-                Shade
-              </Menu.Item>
-              <Menu.Item
-                onClick={toggleColorPicker}
-                leftSection={<IconRainbow />}
-              >
-                Color
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+          <MenuButton toggleColorPicker={toggleColorPicker} />
           <ActionIcon
             size={'xl'}
             variant={'default'}
@@ -291,7 +313,7 @@ export function Sudoku() {
             0
           </ActionIcon>
         </SimpleGrid>
-      </Stack>
+      </Flex>
     </>
   );
 }
