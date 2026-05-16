@@ -3,10 +3,9 @@ import {
   AspectRatio,
   darken,
   Flex,
+  Input,
   Menu,
   SimpleGrid,
-  Text,
-  UnstyledButton,
   useComputedColorScheme,
   useMantineColorScheme,
   useMantineTheme,
@@ -20,7 +19,7 @@ import {
   IconRotate,
   IconRotateClockwise2,
 } from '@tabler/icons-react';
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { useStrict } from '#/hooks/useStrict';
 import { getIndices } from '#/utils/getIndices';
@@ -28,6 +27,7 @@ import { PickPrimaryColorModal } from './PickPrimaryColorModal';
 
 function Cell({
   digit,
+  onChange,
   index,
   selectedIndex,
   onClick,
@@ -36,6 +36,7 @@ function Cell({
   wrong,
 }: {
   digit: number;
+  onChange: (newDigit: number) => void;
   index: number;
   selectedIndex: number;
   onClick: () => void;
@@ -71,9 +72,33 @@ function Cell({
     }
   })();
 
+  const ref = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (index === selectedIndex) {
+      ref.current?.focus();
+    }
+  }, [index, selectedIndex]);
+
   return (
-    <UnstyledButton
-      onClick={onClick}
+    <Input
+      ref={ref}
+      variant={'unstyled'}
+      type={'number'}
+      readOnly={isOriginal}
+      value={digit || ''}
+      onChange={(e) => {
+        const newValue = e.currentTarget.value.toString();
+        const newNumber = Number(newValue.charAt(newValue.length - 1));
+        if (!Number.isNaN(newNumber)) {
+          onChange(newNumber);
+        }
+      }}
+      onKeyDownCapture={(e) => {
+        if (e.key !== 'Tab') {
+          e.preventDefault();
+        }
+      }}
       onFocus={onClick}
       style={{
         border: '1px solid grey',
@@ -81,17 +106,17 @@ function Cell({
         borderTop: rowIndex % 3 || !rowIndex ? undefined : '4px solid grey',
       }}
       bg={scheme === 'dark' ? bg && darken(bg, 0.5) : bg}
-      p={0}
-    >
-      <Text
-        size={'32px'}
-        ta={'center'}
-        fw={isOriginal ? 'bold' : undefined}
-        style={{ color: strict && wrong ? 'red' : undefined }}
-      >
-        {digit || null}
-      </Text>
-    </UnstyledButton>
+      styles={{
+        input: {
+          height: '100%',
+          fontSize: '32px',
+          textAlign: 'center',
+          fontWeight: isOriginal ? 'bold' : undefined,
+          color: strict && wrong ? 'red' : undefined,
+          userSelect: 'none',
+        },
+      }}
+    />
   );
 }
 
@@ -186,10 +211,7 @@ export function Sudoku() {
     window.addEventListener(
       'keydown',
       (e) => {
-        const digit = Number(e.key);
-        if (!Number.isNaN(digit)) {
-          update(selected, digit);
-        } else if (e.key.startsWith('Arrow')) {
+        if (e.key.startsWith('Arrow')) {
           setSelected((prev) => {
             const { rowIndex, colIndex } = getIndices(prev);
 
@@ -231,7 +253,7 @@ export function Sudoku() {
     );
 
     return () => controller.abort();
-  }, [selected, update]);
+  }, []);
 
   const tall = height > width;
 
@@ -267,11 +289,12 @@ export function Sudoku() {
               <Cell
                 key={index}
                 digit={digit}
+                onChange={(newDigit) => update(index, newDigit)}
                 index={index}
                 selectedIndex={solved ? index : selected}
                 onClick={() => setSelected(index)}
                 selectedDigit={current[selected]}
-                isOriginal={original[index] === digit}
+                isOriginal={!!original[index]}
                 wrong={!!digit && !!solution && digit !== solution[index]}
               />
             ))}
