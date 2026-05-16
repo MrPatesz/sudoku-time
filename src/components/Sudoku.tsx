@@ -93,14 +93,15 @@ function Cell({
       readOnly={isOriginal}
       value={digit || ''}
       onChange={(e) => {
-        const newValue = e.currentTarget.value.toString();
-        const newNumber = Number(newValue.charAt(newValue.length - 1));
+        const newNumber = Number(
+          e.currentTarget.value.toString().replace(digit.toString(), ''),
+        );
         if (!Number.isNaN(newNumber)) {
           onChange(newNumber);
         }
       }}
       onKeyDownCapture={(e) => {
-        if (e.key.startsWith('Arrow')) {
+        if (e.key.startsWith('Arrow') || e.key === '.' || e.key === ',') {
           e.preventDefault();
         }
       }}
