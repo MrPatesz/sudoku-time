@@ -132,7 +132,7 @@ function Cell({
       styles={{
         input: {
           height: '100%',
-          fontSize: `${md ? 32 : sm ? 24 : xs ? 16 : 12}px`,
+          fontSize: `${md ? 32 : sm ? 24 : xs ? 20 : 16}px`,
           textAlign: 'center',
           fontWeight: isOriginal ? 'bold' : undefined,
           color: strict && wrong ? 'red' : undefined,
