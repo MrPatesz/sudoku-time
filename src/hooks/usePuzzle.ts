@@ -22,7 +22,7 @@ export const usePuzzle = () => {
         setPuzzle({
           original,
           current: original,
-          solution: solveSudoku(original),
+          solution: solveSudoku(original), // TODO skip if could not solve
         });
       })();
     }
@@ -48,7 +48,8 @@ export const usePuzzle = () => {
   const startNew = useCallback(() => setPuzzle(undefined), [setPuzzle]);
 
   return {
-    current: puzzle?.current ?? [], // TODO Array<{current: number; original: number}> ???
+    // TODO type Cell = { original: number; current: number; solution: number }; cells: Array<Cell>;
+    current: puzzle?.current ?? [],
     original: puzzle?.original ?? [],
     solution: puzzle?.solution,
     update,

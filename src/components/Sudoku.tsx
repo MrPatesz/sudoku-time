@@ -249,6 +249,7 @@ export function Sudoku() {
   useEffect(() => {
     const controller = new AbortController();
 
+    // TODO improve performance
     window.addEventListener(
       'keydown',
       (e) => {
