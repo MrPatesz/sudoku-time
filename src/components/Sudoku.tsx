@@ -260,7 +260,7 @@ export function Sudoku() {
     (prev) => !prev,
     false,
   );
-  const [selected, setSelected] = useState<number>(0);
+  const [selected, setSelected] = useState(0);
   const { current, original, solution, update, rating } = usePuzzle();
   const [difficulty] = useDifficulty();
 
