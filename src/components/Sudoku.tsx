@@ -299,8 +299,8 @@ export function Sudoku() {
                 selectedIndex={solved ? index : selected}
                 onClick={() => setSelected(index)}
                 selectedDigit={current[selected]}
-                isOriginal={!!original[index]}
-                wrong={!!digit && !!solution && digit !== solution[index]}
+                isOriginal={Boolean(original[index] || solved)}
+                wrong={Boolean(digit && solution && digit !== solution[index])}
               />
             ))}
           </SimpleGrid>
