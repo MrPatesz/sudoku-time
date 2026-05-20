@@ -7,12 +7,15 @@ import {
   Input,
   Menu,
   SimpleGrid,
+  Stack,
+  Text,
   useComputedColorScheme,
   useMantineColorScheme,
   useMantineTheme,
 } from '@mantine/core';
 import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 import {
+  IconAntennaBars4,
   IconBrightnessHalf,
   IconMenu2,
   IconPaint,
@@ -22,6 +25,7 @@ import {
   IconRotateClockwise2,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useDifficulty } from '#/hooks/useDifficulty';
 import { useHighlight } from '#/hooks/useHighlight';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { useStrict } from '#/hooks/useStrict';
@@ -163,6 +167,7 @@ const MenuButton = ({
   const [strict, setStrict] = useStrict();
   const [_, setHighlight] = useHighlight();
   const { restart, startNew } = usePuzzle();
+  const [__, setDifficulty] = useDifficulty();
 
   return (
     <Menu>
@@ -174,16 +179,43 @@ const MenuButton = ({
 
       <Menu.Dropdown>
         <Menu.Item
-          onClick={() => setStrict((prev) => !prev)}
-          leftSection={<IconRefreshAlert color={strict ? 'red' : undefined} />}
+          onClick={() => {
+            if (confirm('Are you sure you want to change difficulty?')) {
+              setDifficulty((prev) => {
+                switch (prev) {
+                  case 'Easy': {
+                    return 'Medium';
+                  }
+                  case 'Medium': {
+                    return 'Hard';
+                  }
+                  case 'Hard': {
+                    return 'Diabolical';
+                  }
+                  case 'Diabolical': {
+                    return 'Easy';
+                  }
+                  default: {
+                    return prev satisfies never;
+                  }
+                }
+              });
+              startNew();
+            }
+          }}
+          leftSection={<IconAntennaBars4 />}
         >
-          Mode
+          Difficulty
         </Menu.Item>
         <Menu.Item
-          onClick={() => setHighlight((prev) => !prev)}
-          leftSection={<IconPaint />}
+          onClick={() => {
+            if (confirm('Are you sure you want to start a new puzzle?')) {
+              startNew();
+            }
+          }}
+          leftSection={<IconRotateClockwise2 />}
         >
-          Highlight
+          New
         </Menu.Item>
         <Menu.Item
           onClick={() => {
@@ -196,14 +228,16 @@ const MenuButton = ({
           Restart
         </Menu.Item>
         <Menu.Item
-          onClick={() => {
-            if (confirm('Are you sure you want to start a new puzzle?')) {
-              startNew();
-            }
-          }}
-          leftSection={<IconRotateClockwise2 />}
+          onClick={() => setStrict((prev) => !prev)}
+          leftSection={<IconRefreshAlert color={strict ? 'red' : undefined} />}
         >
-          New
+          Mode
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => setHighlight((prev) => !prev)}
+          leftSection={<IconPaint />}
+        >
+          Highlight
         </Menu.Item>
         <Menu.Item
           onClick={toggleColorScheme}
@@ -227,7 +261,8 @@ export function Sudoku() {
     false,
   );
   const [selected, setSelected] = useState<number>(0);
-  const { current, original, solution, update } = usePuzzle();
+  const { current, original, solution, update, rating } = usePuzzle();
+  const [difficulty] = useDifficulty();
 
   const solved = useMemo(
     () => current.every((digit, index) => digit === solution?.[index]),
@@ -306,7 +341,7 @@ export function Sudoku() {
         onClose={toggleColorPicker}
       />
       <Flex
-        style={{ flexDirection: tall ? 'column' : 'row' }}
+        direction={tall ? 'column' : 'row'}
         gap={'xs'}
         align={'center'}
         p={'xs'}
@@ -336,7 +371,20 @@ export function Sudoku() {
             ))}
           </SimpleGrid>
         </AspectRatio>
-        <MenuButton toggleColorPicker={toggleColorPicker} />
+        <Flex
+          justify={'space-between'}
+          {...(tall
+            ? { w: '100%', direction: 'row' }
+            : { h: '100%', direction: 'column' })}
+        >
+          <MenuButton toggleColorPicker={toggleColorPicker} />
+          <Stack gap={0}>
+            <Text fw={'bold'}>
+              {difficulty} ({rating})
+            </Text>
+            {/* <Text>00:00</Text> */}
+          </Stack>
+        </Flex>
       </Flex>
     </>
   );

@@ -20,7 +20,6 @@ const config = defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: false,
-      workbox: { maximumFileSizeToCacheInBytes: 17616077 },
     }),
   ],
   base: '/sudoku-time/',
