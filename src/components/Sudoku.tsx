@@ -37,6 +37,7 @@ function Cell({
   selectedDigit,
   isOriginal,
   wrong,
+  foundAll,
 }: {
   digit: number;
   onChange: (newDigit: number) => void;
@@ -46,6 +47,7 @@ function Cell({
   selectedDigit: number;
   isOriginal: boolean;
   wrong: boolean;
+  foundAll: boolean;
 }) {
   const [strict] = useStrict();
   const [highlight] = useHighlight();
@@ -137,8 +139,13 @@ function Cell({
           height: '100%',
           fontSize: `${md ? 32 : sm ? 24 : xs ? 20 : 16}px`,
           textAlign: 'center',
-          fontWeight: isOriginal ? 'bold' : undefined,
-          color: strict && wrong ? 'red' : undefined,
+          fontWeight: foundAll ? 'bold' : undefined,
+          color:
+            strict && wrong
+              ? 'red'
+              : !isOriginal
+                ? theme.colors[theme.primaryColor]?.[8]
+                : undefined,
           userSelect: 'none',
           minHeight: 0,
         },
@@ -227,6 +234,18 @@ export function Sudoku() {
     [current, solution],
   );
 
+  const digitCounts = useMemo(
+    () =>
+      current.reduce(
+        (acc, digit) => {
+          acc[digit] = (acc[digit] ?? 0) + 1;
+          return acc;
+        },
+        {} as Partial<Record<number, number>>,
+      ),
+    [current],
+  );
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -311,6 +330,7 @@ export function Sudoku() {
                 selectedDigit={current[selected]}
                 isOriginal={Boolean(original[index] || solved)}
                 wrong={Boolean(digit && solution && digit !== solution[index])}
+                foundAll={digitCounts[digit] === 9}
               />
             ))}
           </SimpleGrid>
