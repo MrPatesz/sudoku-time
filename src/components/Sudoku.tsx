@@ -15,12 +15,14 @@ import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 import {
   IconBrightnessHalf,
   IconMenu2,
-  IconRainbow,
+  IconPaint,
+  IconPalette,
   IconRefreshAlert,
   IconRotate,
   IconRotateClockwise2,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useHighlight } from '#/hooks/useHighlight';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { useStrict } from '#/hooks/useStrict';
 import { getIndices } from '#/utils/getIndices';
@@ -46,6 +48,7 @@ function Cell({
   wrong: boolean;
 }) {
   const [strict] = useStrict();
+  const [highlight] = useHighlight();
 
   const {
     rowIndex: selectedRowIndex,
@@ -68,7 +71,7 @@ function Cell({
       return theme.colors[theme.primaryColor]?.[3 + delta];
     } else if (selectedDigit && selectedDigit === digit) {
       return theme.colors[theme.primaryColor]?.[2 + delta];
-    } else if (selectedIndirectly) {
+    } else if (selectedIndirectly && highlight) {
       return theme.colors[theme.primaryColor]?.[1 + delta];
     }
   })();
@@ -151,6 +154,7 @@ const MenuButton = ({
 }) => {
   const { toggleColorScheme } = useMantineColorScheme();
   const [strict, setStrict] = useStrict();
+  const [_, setHighlight] = useHighlight();
   const { restart, startNew } = usePuzzle();
 
   return (
@@ -167,6 +171,12 @@ const MenuButton = ({
           leftSection={<IconRefreshAlert color={strict ? 'red' : undefined} />}
         >
           Mode
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => setHighlight((prev) => !prev)}
+          leftSection={<IconPaint />}
+        >
+          Highlight
         </Menu.Item>
         <Menu.Item
           onClick={() => {
@@ -194,7 +204,7 @@ const MenuButton = ({
         >
           Shade
         </Menu.Item>
-        <Menu.Item onClick={toggleColorPicker} leftSection={<IconRainbow />}>
+        <Menu.Item onClick={toggleColorPicker} leftSection={<IconPalette />}>
           Color
         </Menu.Item>
       </Menu.Dropdown>

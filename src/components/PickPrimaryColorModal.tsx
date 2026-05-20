@@ -29,7 +29,7 @@ export const PickPrimaryColorModal = ({
       <Group gap={'xs'}>
         {primaryColors.map((color) => (
           <ColorSwatch
-            key={'color'}
+            key={color}
             component={'button'}
             style={{ color: 'white', cursor: 'pointer' }}
             radius={'sm'}
