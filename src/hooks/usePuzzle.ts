@@ -8,6 +8,7 @@ export const usePuzzle = () => {
   const [puzzle, setPuzzle] = useLocalStorage<
     | {
         original: Array<number>;
+        checkpoint?: Array<number>;
         current: Array<number>;
         solution: Array<number>;
         rating: number;
@@ -76,6 +77,24 @@ export const usePuzzle = () => {
 
   const startNew = useCallback(() => setPuzzle(undefined), [setPuzzle]);
 
+  const createCheckpoint = useCallback(
+    () => setPuzzle((prev) => prev && { ...prev, checkpoint: prev.current }),
+    [setPuzzle],
+  );
+
+  const removeCheckpoint = useCallback(
+    () => setPuzzle((prev) => prev && { ...prev, checkpoint: undefined }),
+    [setPuzzle],
+  );
+
+  const restoreCheckpoint = useCallback(
+    () =>
+      setPuzzle((prev) =>
+        prev?.checkpoint ? { ...prev, current: prev.checkpoint } : prev,
+      ),
+    [setPuzzle],
+  );
+
   return {
     // TODO type Cell = { original: number; current: number; solution: number }; cells: Array<Cell>;
     current: puzzle?.current ?? emptyPuzzle,
@@ -85,5 +104,9 @@ export const usePuzzle = () => {
     restart,
     startNew,
     rating: puzzle?.rating,
+    createCheckpoint,
+    removeCheckpoint,
+    restoreCheckpoint,
+    hasCheckpoint: Boolean(puzzle?.checkpoint),
   } as const;
 };

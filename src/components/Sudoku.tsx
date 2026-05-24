@@ -17,6 +17,9 @@ import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 import {
   IconAntennaBars4,
   IconBrightnessHalf,
+  IconClockCheck,
+  IconClockMinus,
+  IconClockPlus,
   IconMenu2,
   IconPaint,
   IconPalette,
@@ -172,7 +175,7 @@ const MenuButton = ({
   return (
     <Menu>
       <Menu.Target>
-        <ActionIcon size={'xl'} variant={'default'}>
+        <ActionIcon size={'xl'} variant={'default'} title={'Menu'}>
           <IconMenu2 />
         </ActionIcon>
       </Menu.Target>
@@ -261,8 +264,19 @@ export function Sudoku() {
     false,
   );
   const [selected, setSelected] = useState(0);
-  const { current, original, solution, update, rating } = usePuzzle();
+  const {
+    current,
+    original,
+    solution,
+    update,
+    rating,
+    hasCheckpoint,
+    createCheckpoint,
+    removeCheckpoint,
+    restoreCheckpoint,
+  } = usePuzzle();
   const [difficulty] = useDifficulty();
+  const [strict] = useStrict();
 
   const solved = useMemo(
     () => current.every((digit, index) => digit === solution?.[index]),
@@ -377,7 +391,44 @@ export function Sudoku() {
             ? { w: '100%', direction: 'row' }
             : { h: '100%', direction: 'column' })}
         >
-          <MenuButton toggleColorPicker={toggleColorPicker} />
+          <Flex
+            gap={'xs'}
+            {...(tall
+              ? { w: '100%', direction: 'row' }
+              : { h: '100%', direction: 'column' })}
+          >
+            <MenuButton toggleColorPicker={toggleColorPicker} />
+            {hasCheckpoint ? (
+              <>
+                <ActionIcon
+                  onClick={removeCheckpoint}
+                  size={'xl'}
+                  variant={'default'}
+                  title={'Remove Checkpoint'}
+                >
+                  <IconClockMinus />
+                </ActionIcon>
+                <ActionIcon
+                  onClick={restoreCheckpoint}
+                  size={'xl'}
+                  variant={'default'}
+                  title={'Restore Checkpoint'}
+                >
+                  <IconClockCheck />
+                </ActionIcon>
+              </>
+            ) : (
+              <ActionIcon
+                onClick={createCheckpoint}
+                size={'xl'}
+                variant={'default'}
+                title={'Create Checkpoint'}
+                disabled={strict}
+              >
+                <IconClockPlus />
+              </ActionIcon>
+            )}
+          </Flex>
           <Stack gap={0}>
             <Text fw={'bold'}>
               {difficulty} ({rating})
