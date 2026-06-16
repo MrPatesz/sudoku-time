@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "short_name": "Sudoku Time",
   "name": "Sudoku Time",
-  "description": "Sudoku Time is a basic Sudoku game without ads, that can be installed on your device.",
+  "description": "Sudoku Time is a free Sudoku game without ads that can also be played offline after installation.",
   "icons": [
     {
       "src": "favicon.ico",
