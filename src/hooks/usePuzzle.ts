@@ -1,6 +1,7 @@
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { useCallback, useEffect } from 'react';
 import { useDifficulty } from './useDifficulty';
+import { useTimer } from './useTimer';
 
 const emptyPuzzle = Array(81).fill(0);
 
@@ -16,6 +17,7 @@ export const usePuzzle = () => {
     | undefined
   >('puzzle');
   const [difficulty] = useDifficulty();
+  const { reset } = useTimer();
 
   useEffect(() => {
     if (!puzzle) {
@@ -70,12 +72,15 @@ export const usePuzzle = () => {
     [setPuzzle],
   );
 
-  const restart = useCallback(
-    () => setPuzzle((prev) => prev && { ...prev, current: prev.original }),
-    [setPuzzle],
-  );
+  const restart = useCallback(() => {
+    setPuzzle((prev) => prev && { ...prev, current: prev.original });
+    reset();
+  }, [setPuzzle, reset]);
 
-  const startNew = useCallback(() => setPuzzle(undefined), [setPuzzle]);
+  const startNew = useCallback(() => {
+    setPuzzle(undefined);
+    reset();
+  }, [setPuzzle, reset]);
 
   const createCheckpoint = useCallback(
     () => setPuzzle((prev) => prev && { ...prev, checkpoint: prev.current }),

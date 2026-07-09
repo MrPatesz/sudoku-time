@@ -35,6 +35,7 @@ import { useHighlight } from '#/hooks/useHighlight';
 import { usePrimaryColor } from '#/hooks/usePrimaryColor';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { useStrict } from '#/hooks/useStrict';
+import { useTimer } from '#/hooks/useTimer';
 import { getIndices } from '#/utils/getIndices';
 import { primaryColors } from '#/utils/primaryColors';
 
@@ -303,6 +304,7 @@ export function Sudoku() {
   } = usePuzzle();
   const [difficulty] = useDifficulty();
   const [strict] = useStrict();
+  const { timer } = useTimer();
 
   const solved = useMemo(
     () => current.every((digit, index) => digit === solution?.[index]),
@@ -451,10 +453,10 @@ export function Sudoku() {
           )}
         </Flex>
         <Stack gap={0}>
-          <Text fw={'bold'}>
+          <Text fw={'bold'} textWrap={'nowrap'}>
             {difficulty} ({rating})
           </Text>
-          {/* <Text>00:00</Text> */}
+          <Text>{timer}</Text>
         </Stack>
       </Flex>
     </Flex>
