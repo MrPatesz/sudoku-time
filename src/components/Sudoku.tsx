@@ -179,7 +179,7 @@ const MenuButton = () => {
   const [difficulty, setDifficulty] = useDifficulty();
 
   return (
-    <Menu>
+    <Menu position={'right'}>
       <Menu.Target>
         <ActionIcon size={'xl'} variant={'default'} title={'Menu'}>
           <IconMenu2 />
