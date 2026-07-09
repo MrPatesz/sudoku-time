@@ -1,9 +1,11 @@
 import {
   ActionIcon,
   AspectRatio,
+  ColorSwatch,
   darken,
   em,
   Flex,
+  getThemeColor,
   Input,
   Menu,
   SimpleGrid,
@@ -15,6 +17,7 @@ import {
 } from '@mantine/core';
 import { useMediaQuery, useViewportSize } from '@mantine/hooks';
 import {
+  IconAlertSquare,
   IconAntennaBars4,
   IconBrightnessHalf,
   IconClockCheck,
@@ -23,17 +26,17 @@ import {
   IconMenu2,
   IconPaint,
   IconPalette,
-  IconRefreshAlert,
   IconRotate,
   IconRotateClockwise2,
 } from '@tabler/icons-react';
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDifficulty } from '#/hooks/useDifficulty';
 import { useHighlight } from '#/hooks/useHighlight';
+import { usePrimaryColor } from '#/hooks/usePrimaryColor';
 import { usePuzzle } from '#/hooks/usePuzzle';
 import { useStrict } from '#/hooks/useStrict';
 import { getIndices } from '#/utils/getIndices';
-import { PickPrimaryColorModal } from './PickPrimaryColorModal';
+import { primaryColors } from '#/utils/primaryColors';
 
 function Cell({
   digit,
@@ -161,16 +164,18 @@ function Cell({
   );
 }
 
-const MenuButton = ({
-  toggleColorPicker,
-}: {
-  toggleColorPicker: () => void;
-}) => {
+const difficulties = ['Easy', 'Medium', 'Hard', 'Diabolical'] as const;
+
+const MenuButton = () => {
+  const theme = useMantineTheme();
   const { toggleColorScheme } = useMantineColorScheme();
-  const [strict, setStrict] = useStrict();
-  const [_, setHighlight] = useHighlight();
+
   const { restart, startNew } = usePuzzle();
-  const [__, setDifficulty] = useDifficulty();
+
+  const [primaryColor, setPrimaryColor] = usePrimaryColor();
+  const [strict, setStrict] = useStrict();
+  const [highlight, setHighlight] = useHighlight();
+  const [difficulty, setDifficulty] = useDifficulty();
 
   return (
     <Menu>
@@ -181,38 +186,10 @@ const MenuButton = ({
       </Menu.Target>
 
       <Menu.Dropdown>
+        <Menu.Label>Puzzle</Menu.Label>
         <Menu.Item
           onClick={() => {
-            if (confirm('Are you sure you want to change difficulty?')) {
-              setDifficulty((prev) => {
-                switch (prev) {
-                  case 'Easy': {
-                    return 'Medium';
-                  }
-                  case 'Medium': {
-                    return 'Hard';
-                  }
-                  case 'Hard': {
-                    return 'Diabolical';
-                  }
-                  case 'Diabolical': {
-                    return 'Easy';
-                  }
-                  default: {
-                    return prev satisfies never;
-                  }
-                }
-              });
-              startNew();
-            }
-          }}
-          leftSection={<IconAntennaBars4 />}
-        >
-          Difficulty
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => {
-            if (confirm('Are you sure you want to start a new puzzle?')) {
+            if (confirm('Would you like to start a new puzzle?')) {
               startNew();
             }
           }}
@@ -222,7 +199,7 @@ const MenuButton = ({
         </Menu.Item>
         <Menu.Item
           onClick={() => {
-            if (confirm('Are you sure you want to restart?')) {
+            if (confirm('Would you like to restart this puzzle?')) {
               restart();
             }
           }}
@@ -230,15 +207,47 @@ const MenuButton = ({
         >
           Restart
         </Menu.Item>
+        <Menu.Label>Experience</Menu.Label>
+        <Menu.Sub>
+          <Menu.Sub.Target>
+            <Menu.Sub.Item leftSection={<IconAntennaBars4 />}>
+              Difficulty
+            </Menu.Sub.Item>
+          </Menu.Sub.Target>
+
+          <Menu.Sub.Dropdown>
+            {difficulties.map((d) => (
+              <Menu.Item
+                key={d}
+                onClick={() => {
+                  if (
+                    confirm(`Would you like to change the difficulty to ${d}?`)
+                  ) {
+                    setDifficulty(d);
+                    startNew();
+                  }
+                }}
+                disabled={d === difficulty}
+              >
+                {d}
+              </Menu.Item>
+            ))}
+          </Menu.Sub.Dropdown>
+        </Menu.Sub>
         <Menu.Item
           onClick={() => setStrict((prev) => !prev)}
-          leftSection={<IconRefreshAlert color={strict ? 'red' : undefined} />}
+          leftSection={<IconAlertSquare color={strict ? 'red' : undefined} />}
         >
-          Mode
+          Errors
         </Menu.Item>
+        <Menu.Label>Appearance</Menu.Label>
         <Menu.Item
           onClick={() => setHighlight((prev) => !prev)}
-          leftSection={<IconPaint />}
+          leftSection={
+            <IconPaint
+              color={highlight ? getThemeColor(primaryColor, theme) : undefined}
+            />
+          }
         >
           Highlight
         </Menu.Item>
@@ -248,9 +257,30 @@ const MenuButton = ({
         >
           Shade
         </Menu.Item>
-        <Menu.Item onClick={toggleColorPicker} leftSection={<IconPalette />}>
-          Color
-        </Menu.Item>
+        <Menu.Sub>
+          <Menu.Sub.Target>
+            <Menu.Sub.Item leftSection={<IconPalette />}>Color</Menu.Sub.Item>
+          </Menu.Sub.Target>
+
+          <Menu.Sub.Dropdown>
+            {primaryColors.map((color) => (
+              <Menu.Item
+                key={color}
+                onClick={() => setPrimaryColor(color)}
+                disabled={color === primaryColor}
+                leftSection={
+                  <ColorSwatch
+                    color={getThemeColor(color, theme)}
+                    radius={'sm'}
+                    size={24}
+                  />
+                }
+              >
+                {`${color[0].toUpperCase()}${color.slice(1)}`}
+              </Menu.Item>
+            ))}
+          </Menu.Sub.Dropdown>
+        </Menu.Sub>
       </Menu.Dropdown>
     </Menu>
   );
@@ -259,10 +289,6 @@ const MenuButton = ({
 export function Sudoku() {
   const { height, width } = useViewportSize();
 
-  const [showColorPicker, toggleColorPicker] = useReducer(
-    (prev) => !prev,
-    false,
-  );
   const [selected, setSelected] = useState(0);
   const {
     current,
@@ -349,94 +375,88 @@ export function Sudoku() {
   const tall = height > width;
 
   return (
-    <>
-      <PickPrimaryColorModal
-        opened={showColorPicker}
-        onClose={toggleColorPicker}
-      />
+    <Flex
+      direction={tall ? 'column' : 'row'}
+      gap={'xs'}
+      align={'center'}
+      p={'xs'}
+    >
+      <AspectRatio {...(tall ? { w: '100%' } : { h: '100%' })}>
+        <SimpleGrid
+          cols={9}
+          spacing={0}
+          verticalSpacing={0}
+          bd={'4px solid grey'}
+          w={'100%'}
+          h={'100%'}
+        >
+          {current.map((digit, index) => (
+            <Cell
+              key={index}
+              digit={digit}
+              onChange={(newDigit) => update(index, newDigit)}
+              index={index}
+              selectedIndex={solved ? index : selected}
+              onClick={() => setSelected(index)}
+              selectedDigit={current[selected]}
+              isOriginal={Boolean(original[index] || solved)}
+              wrong={Boolean(digit && solution && digit !== solution[index])}
+              foundAll={digitCounts[digit] === 9}
+            />
+          ))}
+        </SimpleGrid>
+      </AspectRatio>
       <Flex
-        direction={tall ? 'column' : 'row'}
-        gap={'xs'}
-        align={'center'}
-        p={'xs'}
+        justify={'space-between'}
+        {...(tall
+          ? { w: '100%', direction: 'row' }
+          : { h: '100%', direction: 'column' })}
       >
-        <AspectRatio {...(tall ? { w: '100%' } : { h: '100%' })}>
-          <SimpleGrid
-            cols={9}
-            spacing={0}
-            verticalSpacing={0}
-            bd={'4px solid grey'}
-            w={'100%'}
-            h={'100%'}
-          >
-            {current.map((digit, index) => (
-              <Cell
-                key={index}
-                digit={digit}
-                onChange={(newDigit) => update(index, newDigit)}
-                index={index}
-                selectedIndex={solved ? index : selected}
-                onClick={() => setSelected(index)}
-                selectedDigit={current[selected]}
-                isOriginal={Boolean(original[index] || solved)}
-                wrong={Boolean(digit && solution && digit !== solution[index])}
-                foundAll={digitCounts[digit] === 9}
-              />
-            ))}
-          </SimpleGrid>
-        </AspectRatio>
         <Flex
-          justify={'space-between'}
+          gap={'xs'}
           {...(tall
             ? { w: '100%', direction: 'row' }
             : { h: '100%', direction: 'column' })}
         >
-          <Flex
-            gap={'xs'}
-            {...(tall
-              ? { w: '100%', direction: 'row' }
-              : { h: '100%', direction: 'column' })}
-          >
-            <MenuButton toggleColorPicker={toggleColorPicker} />
-            {hasCheckpoint ? (
-              <>
-                <ActionIcon
-                  onClick={removeCheckpoint}
-                  size={'xl'}
-                  variant={'default'}
-                  title={'Remove Checkpoint'}
-                >
-                  <IconClockMinus />
-                </ActionIcon>
-                <ActionIcon
-                  onClick={restoreCheckpoint}
-                  size={'xl'}
-                  variant={'default'}
-                  title={'Restore Checkpoint'}
-                >
-                  <IconClockCheck />
-                </ActionIcon>
-              </>
-            ) : (
+          <MenuButton />
+          {hasCheckpoint ? (
+            <>
               <ActionIcon
-                onClick={createCheckpoint}
+                onClick={removeCheckpoint}
                 size={'xl'}
                 variant={'default'}
-                title={'Create Checkpoint'}
-                disabled={strict}
+                title={'Remove Checkpoint'}
               >
-                <IconClockPlus />
+                <IconClockMinus />
               </ActionIcon>
-            )}
-          </Flex>
-          <Stack gap={0}>
-            <Text fw={'bold'}>
-              {difficulty} ({rating})
-            </Text>
-            {/* <Text>00:00</Text> */}
-          </Stack>
+              <ActionIcon
+                onClick={restoreCheckpoint}
+                size={'xl'}
+                variant={'default'}
+                title={'Restore Checkpoint'}
+              >
+                <IconClockCheck />
+              </ActionIcon>
+            </>
+          ) : (
+            <ActionIcon
+              onClick={createCheckpoint}
+              size={'xl'}
+              variant={'default'}
+              title={'Create Checkpoint'}
+              disabled={strict}
+            >
+              <IconClockPlus />
+            </ActionIcon>
+          )}
         </Flex>
+        <Stack gap={0}>
+          <Text fw={'bold'}>
+            {difficulty} ({rating})
+          </Text>
+          {/* <Text>00:00</Text> */}
+        </Stack>
       </Flex>
-    </>
+    </Flex>
   );
 }

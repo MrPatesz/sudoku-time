@@ -14,8 +14,8 @@
     "check": "biome check"
   },
   "dependencies": {
-    "@mantine/core": "^9.1.1",
-    "@mantine/hooks": "^9.2.1",
+    "@mantine/core": "^9.4.1",
+    "@mantine/hooks": "^9.4.1",
     "@tabler/icons-react": "^3.44.0",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
