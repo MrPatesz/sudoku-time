@@ -15,6 +15,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       void navigator.wakeLock.request('screen');
+      // @ts-expect-error
+      navigator.virtualKeyboard.overlaysContent = true;
     } catch (_) {}
   }, []);
 
