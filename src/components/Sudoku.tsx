@@ -304,12 +304,18 @@ export function Sudoku() {
   } = usePuzzle();
   const [difficulty] = useDifficulty();
   const [strict] = useStrict();
-  const { timer } = useTimer();
+  const { timer, stop } = useTimer();
 
   const solved = useMemo(
     () => current.every((digit, index) => digit === solution?.[index]),
     [current, solution],
   );
+
+  useEffect(() => {
+    if (solved) {
+      stop();
+    }
+  }, [solved, stop]);
 
   const digitCounts = useMemo(
     () =>

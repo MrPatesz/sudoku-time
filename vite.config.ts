@@ -23,6 +23,7 @@ const config = defineConfig({
     }),
   ],
   base: '/sudoku-time/',
+  server: { open: true },
 });
 
 export default config;
